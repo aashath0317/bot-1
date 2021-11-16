@@ -343,7 +343,7 @@ def _mirror(bot, update, isTar=False, extract=False, isZip=False, isQbit=False):
                 sendMessage(f"{e}", bot, update)
                 return
 
-    listener = MirrorListener(bot, update, pswd, isTar, extract, isZip, isQbit)
+    listener = MirrorListener(bot, update, pswd, extract, isZip, isQbit)
 
     if bot_utils.is_gdrive_link(link):
         if not isTar and not extract:
