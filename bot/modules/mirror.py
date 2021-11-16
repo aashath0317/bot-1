@@ -406,6 +406,5 @@ unzip_mirror_handler = CommandHandler(BotCommands.UnzipMirrorCommand, unzip_mirr
 zip_mirror_handler = CommandHandler(BotCommands.ZipMirrorCommand, zip_mirror,
                                     filters=CustomFilters.authorized_chat | CustomFilters.authorized_user, run_async=True)
 dispatcher.add_handler(mirror_handler)
-dispatcher.add_handler(tar_mirror_handler)
 dispatcher.add_handler(unzip_mirror_handler)
 dispatcher.add_handler(zip_mirror_handler)
