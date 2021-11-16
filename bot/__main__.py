@@ -49,8 +49,8 @@ def stats(update, context):
 
 def start(update, context):
     buttons = button_build.ButtonMaker()
-    buttons.buildbutton("Repo", "https://www.github.com/anasty17/mirror-leech-telegram-bot")
-    buttons.buildbutton("Group", "https://t.me/mirrorLeechTelegramBot")
+    buttons.buildbutton("Mirror Group", "https://t.me/c2ptech")
+    buttons.buildbutton("Owner", "https://t.me/Aashath")
     reply_markup = InlineKeyboardMarkup(buttons.build_menu(2))
     if CustomFilters.authorized_user(update) or CustomFilters.authorized_chat(update):
         start_string = f'''
@@ -59,7 +59,7 @@ Type /{BotCommands.HelpCommand} to get a list of available commands
 '''
         sendMarkup(start_string, context.bot, update, reply_markup)
     else:
-        sendMarkup('Not Authorized user', context.bot, update, reply_markup)
+        sendMarkup('Your are not alowed using me!! contact @Aashath', context.bot, update, reply_markup)
 
 def restart(update, context):
     restart_message = sendMessage("Restarting...", context.bot, update)
@@ -146,9 +146,9 @@ help_string_telegraph = f'''<br>
 <b>/{BotCommands.StatsCommand}</b>: Show Stats of the machine the bot is hosted on
 '''
 help = Telegraph(access_token=telegraph_token).create_page(
-        title='Mirrorbot Help',
-        author_name='Mirrorbot',
-        author_url='https://github.com/anasty17/mirror-leech-telegram-bot',
+        title='C2PTECH',
+        author_name='Aashath',
+        author_url='https://www.youtube.com/c/c2ptech',
         html_content=help_string_telegraph,
     )["path"]
 
