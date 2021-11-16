@@ -71,14 +71,17 @@ class MirrorListener(listeners.MirrorListeners):
             if name == "None" or self.isQbit: # when pyrogram's media.file_name is of NoneType
                 name = os.listdir(f'{DOWNLOAD_DIR}{self.uid}')[0]
             m_path = f'{DOWNLOAD_DIR}{self.uid}/{name}'
-        if self.isTar:
+        if self.isZip:
             try:
                 with download_dict_lock:
-                    download_dict[self.uid] = TarStatus(name, m_path, size)
-                if self.isZip:
-                    path = fs_utils.zip(name, m_path)
+                    download_dict[self.uid] = ZipStatus(name, m_path, size)
+                pswd = self.pswd
+                path = m_path + ".zip"
+                LOGGER.info(f'Zip: orig_path: {m_path}, zip_path: {path}')
+                if pswd is not None:
+                    subprocess.run(["7z", "a", "-mx=0", f"-p{pswd}", path, m_path])
                 else:
-                    path = fs_utils.tar(m_path)
+                    subprocess.run(["7z", "a", "-mx=0", path, m_path])
             except FileNotFoundError:
                 LOGGER.info('File to archive not found!')
                 self.onUploadError('Internal error occurred!!')
