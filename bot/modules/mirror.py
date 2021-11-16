@@ -37,9 +37,8 @@ ariaDlManager = AriaDownloadHelper()
 ariaDlManager.start_listener()
 
 class MirrorListener(listeners.MirrorListeners):
-    def __init__(self, bot, update, pswd, isTar=False, extract=False, isZip=False, isQbit=False):
+    def __init__(self, bot, update, pswd, extract=False, isZip=False, isQbit=False):
         super().__init__(bot, update)
-        self.isTar = isTar
         self.extract = extract
         self.isZip = isZip
         self.isQbit = isQbit
@@ -159,9 +158,9 @@ class MirrorListener(listeners.MirrorListeners):
             msg = f'<b>☞ 📂Filename : </b><code>{download_dict[self.uid].name()}</code>\n<b>☞ 📦Size : </b><code>{size}</code>'
             if os.path.isdir(f'{DOWNLOAD_DIR}/{self.uid}/{download_dict[self.uid].name()}'):
                 msg += '\n<b>☞ 🌀Type : </b><code>Folder</code>'
-                msg += f'\n<b>☞ 🗳Powerd by : @AT_BOTs</b>'
+                msg += f'\n<b>☞ 🗳Powerd by : C2PTECH</b>'
             else:
-                msg += f'\n<b>☞ 🗳Powerd by : @AT_BOTs</b>'
+                msg += f'\n<b>☞ 🗳Powerd by : C2PTECH</b>'
             buttons = button_build.ButtonMaker()
             if SHORTENER is not None and SHORTENER_API is not None:
                 surl = requests.get(f'https://{SHORTENER}/api?api={SHORTENER_API}&url={link}&format=text').text
@@ -392,8 +391,6 @@ def mirror(update, context):
     _mirror(context.bot, update)
 
 
-def tar_mirror(update, context):
-    _mirror(context.bot, update, True)
 
 
 def unzip_mirror(update, context):
@@ -404,8 +401,6 @@ def zip_mirror(update, context):
 
 mirror_handler = CommandHandler(BotCommands.MirrorCommand, mirror,
                                 filters=CustomFilters.authorized_chat | CustomFilters.authorized_user, run_async=True)
-tar_mirror_handler = CommandHandler(BotCommands.TarMirrorCommand, tar_mirror,
-                                    filters=CustomFilters.authorized_chat | CustomFilters.authorized_user, run_async=True)
 unzip_mirror_handler = CommandHandler(BotCommands.UnzipMirrorCommand, unzip_mirror,
                                       filters=CustomFilters.authorized_chat | CustomFilters.authorized_user, run_async=True)
 zip_mirror_handler = CommandHandler(BotCommands.ZipMirrorCommand, zip_mirror,
