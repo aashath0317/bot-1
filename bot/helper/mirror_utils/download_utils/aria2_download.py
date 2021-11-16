@@ -1,7 +1,6 @@
-from bot import aria2, download_dict_lock, STOP_DUPLICATE, TORRENT_DIRECT_LIMIT, TAR_UNZIP_LIMIT
+from bot import aria2, download_dict_lock, STOP_DUPLICATE, TORRENT_DIRECT_LIMIT, ZIP_UNZIP_LIMIT
 from bot.helper.mirror_utils.upload_utils.gdriveTools import GoogleDriveHelper
 from bot.helper.ext_utils.bot_utils import *
-from .download_helper import DownloadHelper
 from bot.helper.mirror_utils.status_utils.aria_download_status import AriaDownloadStatus
 from bot.helper.telegram_helper.message_utils import *
 import threading
@@ -9,45 +8,46 @@ from aria2p import API
 from time import sleep
 
 
-class AriaDownloadHelper(DownloadHelper):
+class AriaDownloadHelper:
 
     def __init__(self):
         super().__init__()
 
     @new_thread
     def __onDownloadStarted(self, api, gid):
-        if STOP_DUPLICATE or TORRENT_DIRECT_LIMIT is not None or TAR_UNZIP_LIMIT is not None:
-            sleep(2)
+        if STOP_DUPLICATE or TORRENT_DIRECT_LIMIT is not None or ZIP_UNZIP_LIMIT is not None:
+            sleep(1)
             dl = getDownloadByGid(gid)
             download = aria2.get_download(gid)
-            if STOP_DUPLICATE and dl is not None:
-                LOGGER.info(f"Checking File/Folder if already in Drive...")
+            if STOP_DUPLICATE and dl is not None and not dl.getListener().isLeech:
+                LOGGER.info('Checking File/Folder if already in Drive...')
                 sname = aria2.get_download(gid).name
-                if dl.getListener().isTar:
-                    sname = sname + ".tar"
-                if dl.getListener().extract:
-                    smsg = None
-                else:
-                    gdrive = GoogleDriveHelper(None)
-                    smsg, button = gdrive.drive_list(sname)
-                if smsg:
-                    dl.getListener().onDownloadError(f'File/Folder already available in Drive.\n\n')
-                    aria2.remove([download], force=True)
-                    sendMarkup("Here are the search results:", dl.getListener().bot, dl.getListener().update, button)
-                    return
-            if (TORRENT_DIRECT_LIMIT is not None or TAR_UNZIP_LIMIT is not None) and dl is not None:
-                size = aria2.get_download(gid).total_length
-                if dl.getListener().isTar or dl.getListener().extract:
-                    is_tar_ext = True
-                    mssg = f'Tar/Unzip limit is {TAR_UNZIP_LIMIT}'
-                else:
-                    is_tar_ext = False
-                    mssg = f'Torrent/Direct limit is {TORRENT_DIRECT_LIMIT}'
-                result = check_limit(size, TORRENT_DIRECT_LIMIT, TAR_UNZIP_LIMIT, is_tar_ext)
-                if result:
-                    dl.getListener().onDownloadError(f'{mssg}.\nYour File/Folder size is {get_readable_file_size(size)}')
-                    aria2.remove([download], force=True)
-                    return
+                if dl.getListener().isZip:
+                    sname = sname + ".zip"
+                if not dl.getListener().extract:
+                    gdrive = GoogleDriveHelper()
+                    smsg, button = gdrive.drive_list(sname, True)
+                    if smsg:
+                         dl.getListener().onDownloadError('File/Folder already available in Drive.\n\n')
+                         aria2.remove([download], force=True)
+                         sendMarkup("Here are the search results:", dl.getListener().bot, dl.getListener().update, button)
+                         return
+            if dl is not None:
+                limit = None
+                if ZIP_UNZIP_LIMIT is not None and (dl.getListener().isZip or dl.getListener().extract):
+                    mssg = f'Zip/Unzip limit is {ZIP_UNZIP_LIMIT}GB'
+                    limit = ZIP_UNZIP_LIMIT
+                elif TORRENT_DIRECT_LIMIT is not None:
+                    mssg = f'Torrent/Direct limit is {TORRENT_DIRECT_LIMIT}GB'
+                    limit = TORRENT_DIRECT_LIMIT
+                if limit is not None:
+                    LOGGER.info('Checking File/Folder Size...')
+                    sleep(1)
+                    size = aria2.get_download(gid).total_length
+                    if size > limit * 1024**3:
+                        dl.getListener().onDownloadError(f'{mssg}.\nYour File/Folder size is {get_readable_file_size(size)}')
+                        aria2.remove([download], force=True)
+                        return
         update_all_messages()
 
     def __onDownloadComplete(self, api: API, gid):
@@ -64,16 +64,15 @@ class AriaDownloadHelper(DownloadHelper):
                     download_dict[dl.uid()].is_torrent = True
             update_all_messages()
             LOGGER.info(f'Changed gid from {gid} to {new_gid}')
-        else:
-            if dl:
-                threading.Thread(target=dl.getListener().onDownloadComplete).start()
+        elif dl:
+            threading.Thread(target=dl.getListener().onDownloadComplete).start()
 
     @new_thread
     def __onDownloadStopped(self, api, gid):
         sleep(4)
         dl = getDownloadByGid(gid)
         if dl: 
-            dl.getListener().onDownloadError('★ 𝗠𝗔𝗚𝗡𝗘𝗧/𝗧𝗢𝗥𝗥𝗘𝗡𝗧 𝗟𝗜𝗡𝗞 𝗜𝗦 𝗗𝗘𝗔𝗗 ❌ ★')
+            dl.getListener().onDownloadError('Dead torrent!')
 
     @new_thread
     def __onDownloadError(self, api, gid):
@@ -90,8 +89,7 @@ class AriaDownloadHelper(DownloadHelper):
         aria2.listen_to_notifications(threaded=True, on_download_start=self.__onDownloadStarted,
                                       on_download_error=self.__onDownloadError,
                                       on_download_stop=self.__onDownloadStopped,
-                                      on_download_complete=self.__onDownloadComplete,
-                                      timeout=1)
+                                      on_download_complete=self.__onDownloadComplete)
 
     def add_download(self, link: str, path, listener, filename):
         if is_magnet(link):
