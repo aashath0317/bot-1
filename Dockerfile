@@ -9,10 +9,7 @@ RUN chmod +x /usr/local/bin/extract && chmod +x /usr/local/bin/pextract
 
 COPY requirements.txt .
 RUN pip3 install --no-cache-dir -r requirements.txt
-RUN apt-get update && \
-      apt-get -y install sudo \
-      	sudo apt install -y qbittorrent-nox
-
+RUN apt install -y qbittorrent-nox
 COPY . .
 COPY .netrc /root/.netrc
 RUN chmod 600 /usr/src/app/.netrc
