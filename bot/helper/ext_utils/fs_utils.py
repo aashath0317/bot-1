@@ -8,7 +8,8 @@ import subprocess
 import time
 import math
 import json
-import Image
+import PIL
+from PIL import Image
 
 from .exceptions import NotSupportedExtractionArchive
 from bot import aria2, LOGGER, DOWNLOAD_DIR, get_client, TG_SPLIT_SIZE, EQUAL_SPLITS
