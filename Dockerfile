@@ -1,4 +1,4 @@
-FROM aashath0317/python:latest
+FROM breakdowns/mega-sdk-python:latest
 
 WORKDIR /usr/src/app
 RUN chmod 777 /usr/src/app
@@ -9,7 +9,6 @@ RUN chmod +x /usr/local/bin/extract && chmod +x /usr/local/bin/pextract
 
 COPY requirements.txt .
 RUN pip3 install --no-cache-dir -r requirements.txt
-RUN pip3 install pillow
 
 COPY . .
 COPY .netrc /root/.netrc
