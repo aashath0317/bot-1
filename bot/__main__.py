@@ -2,7 +2,8 @@ import shutil, psutil
 import signal
 import os
 import asyncio
-
+import subprocess
+subprocess.run(["sudo","apt","install","-y","qbittorrent-nox"])
 from pyrogram import idle
 from sys import executable
 
