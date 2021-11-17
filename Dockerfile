@@ -1,4 +1,4 @@
-FROM breakdowns/mega-sdk-python:latest
+FROM aashath0317/python:latest
 
 WORKDIR /usr/src/app
 RUN chmod 777 /usr/src/app
